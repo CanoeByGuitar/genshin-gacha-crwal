@@ -24,7 +24,6 @@ def main():
         print("请放入抓包后的接口后执行，如 python3 gacha.py 'https://hk4e-api.mihoyo.com/event/gacha_info/api/getGachaLog?xxxxx'")
         return
     URL = sys.argv[1]
-    URL = 'https://webstatic.mihoyo.com/hk4e/event/e20190909gacha/index.html?authkey_ver=1&sign_type=2&auth_appid=webview_gacha&init_type=301&gacha_id=71eaf9e3bf2b240122a3f78e9bbfd3e43032fd&timestamp=1626824136&lang=zh-cn&device_type=mobile&ext=%7b%22loc%22%3a%7b%22x%22%3a1639.1116943359375%2c%22y%22%3a195.01763916015626%2c%22z%22%3a-2642.400146484375%7d%2c%22platform%22%3a%22IOS%22%7d&game_version=CNRELiOS2.0.0_R3696781_S3788800_D3875455&region=cn_gf01&authkey=LsK%2bcVI5w7J5KpQIUf4SOKWjwbjGrlfH%2fvU4ua0FfHNbQWUhgxtoPW3LteG4eapLv2Bh4IeiY%2f9ozfv3EQvbF6ChIXQ5EPYR3DYV9zgkdj5hzRKedkhNeovN7TiqEax24ONzRF84uQjD7DbV2b%2bMw6rL6xTXj%2bO2FLt2NEZzQ2pwi90rdTz29fkLTdL%2fc2PQKaPd7mAEiVSKReiFQtj0EMpDXdq7mFfzGhGsVqCMXI7%2fKJNheIV2ozO6sVnJI8iIOcUSLSb%2bf2s8XWPR25lQi1uwHEzBcwJUHTVImO5QrV0HbhIaAWisSbJRncIbWqeiJ64P6jSKHJWIg3Bsp%2bg1zGJNqnGJLgNgvTJ9iBM%2ftUZPRPPyK1gy57uxlt9pZzrxA66%2fyBawzlbLYLOyYwM06dV%2bYXzDRun5vn5zoNDPNNDn4R6ufo3Du%2bIbVfroiV6dl%2f%2fCT1Dwtc%2b%2b1B2LYA09HCSgUUAOilCSK4k6gq%2fDbIELa%2fmOs1dYL3eRV6pt5FpU1ZZt2p1x4bLG9la708KRlsgeX0fvnTfjN2gWVGjL3Y9DqrqhvcnsV2sxpN1ipHwVXMcqyNJ0ia8ahAmu2qG4jwHyHBCScpqp3RGLYDHIB7qQIYVPlADPnPmJJPdP7EQmuMVS1Uua5YHHy%2b0AyODqd5f2Ttf7qCI%2bOmxCsXEsB8vPIulRVoOkxbBJKN16J6BBas2UBBzdO%2bH8sTs6jbnF59sbMiEsvkEQGrchirkAHIZyixzPUNxJP1aFpp6vDaa9pf7liLTGOWvDTrYgBbuD7lfW4ske9a5VW0ngfkN5R7mjg9qg8jxHBe3bu2I6NDqvClfNo3zGf0rhuXXGHJb08FckTGKbdcik9Qx80EXoCf30QjDS9qDSX0edM9joo8Tjh1neoUES%2fKsQjiPgP%2bjHVbjQOWCZk5cCB9jRmbsb%2b3dlwQtPqEJJZyZRNR5m29k15k%2f7AdSYbmFheP2iPB0TntJ5Xq0q3w9bEZ8h5uuJmfjPwLlPnAbwl8Pd5%2fDOA%2fNH&game_biz=hk4e_cn'
     parsed_url = urlparse(URL)
     params = parse_qs(parsed_url.query)
     authkey = params['authkey'][0]
@@ -73,9 +72,9 @@ def main():
             print(" 正在查询"+config_name+":第"+str(page)+"页")
             request = requests.get(url)
             formatJSON = request.json()        
-            # if formatJSON["retcode"] != 0:
-            #     print("发生错误："+formatJSON["message"])
-            #     return
+            if formatJSON["retcode"] != 0:
+                print("发生错误："+formatJSON["message"])
+                return
             if len(formatJSON["data"]["list"]) == 0:
                 break
             for  data in formatJSON["data"]["list"]:    
