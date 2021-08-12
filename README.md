@@ -15,14 +15,15 @@
 ![](https://github.com/CanoeByGuitar/genshin-gacha-crwal/blob/main/AndroidorPC.jpg)
 
 - IOS
-（图源：公众号 原神创意工坊）
-![](https://github.com/CanoeByGuitar/genshin-gacha-crwal/blob/main/ios.png)
+使用抓包工具Stream,游戏内刷新抽卡记录页抓获api
 
-2. 复制接口url后，执行脚本 
+2. 复制接口url后，执行脚本，目录下会生成`genshin_常驻祈愿.csv`、`genshin_角色活动祈愿.csv`、`genshin_武器活动祈愿.csv`
 ```shell
 python3 crwal.py 'https://hk4e-api.mihoyo.com/event/gacha_info/api/getGachaLog?xxxxx'
 ```
-3. 预期结果如下
-![](https://github.com/CanoeByGuitar/genshin-gacha-crwal/blob/main/result_example.png)
-同时目录下会生成`genshin_常驻祈愿.csv`、`genshin_角色活动祈愿.csv`、`genshin_武器活动祈愿.csv`
+3. 打开analysis.html按要求操作，预期结果如下
+![](https://github.com/CanoeByGuitar/genshin-gacha-crwal/blob/main/analysis.jpg)
+
+# 未来
+数据量大之后，可能会增添更多分析及动态图，并嵌入vue-electron.
 

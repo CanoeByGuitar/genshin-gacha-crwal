@@ -5,23 +5,57 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>祈愿分析</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
 </head>
 
 <body>
 
-    <div id="container1" style="height: 400px; width: 350px ; display: inline;float: left">
-        <input type="file" id="fileInput">
-    </div>
-    <div id="container2" style="height: 400px; width: 1000px;float: left">
-
+    <div id="container1" style="height: 400px">
+        武器池<input type="file" id="fileInput1">
     </div>
 
+    <div id="container2" style="height: 400px">
+        角色池<input type="file" id="fileInput2">
+    </div>
 
-
+    <div id="container3" style="height: 400px">
+        常驻池<input type="file" id="fileInput3">
+    </div>
 
     <script>
+
+
+        document.getElementById('fileInput1').addEventListener('change', function selectedFileChanged() {
+            const reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function fileReadCompleted() {
+                var data = getPieData(csvToObject(reader.result));
+                var dataframe = getBarData(csvToObject(reader.result));
+                makeChart(data, dataframe, "container1", "武器池")
+            };
+        });
+
+        document.getElementById('fileInput2').addEventListener('change', function selectedFileChanged() {
+            const reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function fileReadCompleted() {
+                var data = getPieData(csvToObject(reader.result));
+                var dataframe = getBarData(csvToObject(reader.result));
+                makeChart(data, dataframe, "container2", "角色池")
+            };
+        });
+
+        document.getElementById('fileInput3').addEventListener('change', function selectedFileChanged() {
+            const reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function fileReadCompleted() {
+                var data = getPieData(csvToObject(reader.result));
+                var dataframe = getBarData(csvToObject(reader.result));
+                makeChart(data, dataframe, "container3", "常驻池")
+            };
+        });
+
         function csvToObject(csvString) {
             var csvarry = csvString.split("\n");
             var datas = [];
@@ -37,40 +71,113 @@
             return datas;
         }
 
-        function getSpecificData(rawData) {
-            data = {};
+        function getPieData(rawData) {
+            var cnt3 = 0, cnt4 = 0, cnt5 = 0;
             for (var i = 0; i < rawData.length; i++) {
-                if (!(rawData[i].名称 in data)) data[rawData[i].名称] = 1;
-                else data[rawData[i].名称]++;
+                var type = rawData[i].星级;
+                if (type == 3) {
+                    cnt3++;
+                } else if (type == 4) {
+                    cnt4++;
+                } else cnt5++;
             }
+            var data = new Array();
+            data[0] = { value: cnt3, name: '3星祈愿' };
+            data[1] = { value: cnt4, name: '4星祈愿' };
+            data[2] = { value: cnt5, name: '5星祈愿' };
             return data;
         }
 
-        function makeChart1(data) {
-            var dom = document.getElementById("container1");
+        function getBarData(rawData) {
+            data = {};
+            hash = {};
+            for (var i = 0; i < rawData.length; i++) {
+                if (!(rawData[i].名称 in data)) {
+                    data[rawData[i].名称] = 1;
+                    hash[rawData[i].名称] = rawData[i].星级;
+                }
+                else data[rawData[i].名称]++;
+            }
+            _name = [];
+            cnt = [];
+            type = [];
+            for (key in data) {
+                _name.push(key);
+                cnt.push(data[key]);
+                type.push(hash[key]);
+            }
+            dataframe = [];
+            for (var i = 0; i < _name.length; i++) {
+                dataframe.push([_name[i], cnt[i], type[i]]);
+            }
+            return dataframe
+        }
+
+        colorPannel = {
+            3: '#0189e2',
+            4: '#57279f',
+            5: '#ffb700'
+        }
+
+        function makeChart(data, dataframe, container, banner) {
+            var dom = document.getElementById(container);
             var myChart = echarts.init(dom);
             var app = {};
             var option;
+            var yMax = 40;
+            var dataShadow = [];
+            for (var i = 0; i < data.length; i++) {
+                dataShadow.push(yMax);
+            }
             option = {
+                toolbox: {
+                    show: true,
+                    feature: {
+                        mark: { show: true },
+                        dataView: { show: true, readOnly: false },
+                        restore: { show: true },
+                        saveAsImage: { show: true }
+                    }
+                },
+                grid: {
+                    left: '35%'
+                },
                 title: {
                     text: '祈愿记录',
-                    subtext: '角色池',
-                    left: 'center'
+                    subtext: '     ' + banner,
+                    left: '20%'
                 },
                 tooltip: {
                     trigger: 'item'
                 },
                 legend: {
                     orient: 'vertical',
-                    left: 'left',
+                    left: '5%'
                 },
+                xAxis: {
+                    type: 'category',
+                    axisLabel: { interval: 0, rotate: 45 },
+                    gridIndex: 0
+                },
+                yAxis: {
+
+                },
+                dataset: [{
+                    dimensions: ['name', 'cnt', 'star'],
+                    source: dataframe
+                }, {
+                    transform: {
+                        type: 'sort',
+                        config: { dimension: 'cnt', order: 'desc' }
+                    }
+                }],
                 series: [
                     {
+                        data: data,
+                        center: ['15%', '50%'],
                         name: '抽卡记录',
                         type: 'pie',
-                        radius: '50%',
-
-                        data: data,
+                        radius: '40%',
                         emphasis: {
                             itemStyle: {
                                 shadowBlur: 10,
@@ -87,103 +194,19 @@
                                 }
                             }
                         }
+                    },
+                    {
+                        type: 'bar',
+                        itemStyle: {
+                            color: (param) => colorPannel[param.value[2]]
+                        },
+                        encode: { x: 'name', y: 'cnt' },
+                        datasetIndex: 1
                     }
                 ]
             };
             myChart.setOption(option);
         }
-
-        function makeChart2(n, cnt) {
-            var dom = document.getElementById("container2");
-            var myChart = echarts.init(dom);
-            var app = {};
-            var option;
-            var yMax = 40;
-            var dataShadow = [];
-            for (var i = 0; i < data.length; i++) {
-                dataShadow.push(yMax);
-            }
-
-            source = []
-            for (var i = 0; i < n.length; i++) {
-                source.push([n[i], cnt[i]])
-            }
-
-            option = {
-                dataset: [{
-                    dimensions: ['name', 'cnt'],
-                    source: source
-                }, {
-                    transform: {
-                        type: 'sort',
-                        config: { dimension: 'cnt', order: 'desc' }
-                    }
-                }],
-                xAxis: {
-                    type: 'category',
-                    axisLabel: { interval: 0, rotate: 45 },
-                },
-                yAxis: {},
-                series: {
-                    type: 'bar',
-                    encode: { x: 'name', y: 'cnt' },
-                    datasetIndex: 1
-                }, tooltip: {
-                    trigger: 'item'
-                },emphasis: {
-                    itemStyle: {
-                        shadowBlur: 10,
-                        shadowOffsetX: 0,
-                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-                    }
-                }
-            };
-
-            if (option && typeof option === 'object') {
-                myChart.setOption(option);
-            }
-        }
-
-
-        document.getElementById('fileInput').addEventListener('change', function selectedFileChanged() {
-            const reader = new FileReader();
-            reader.readAsText(this.files[0]);
-            reader.onload = function fileReadCompleted() {
-                // 当读取完成时，内容只在`reader.result`中
-                // console.log(reader.result);
-                rawData = csvToObject(reader.result);
-                // console.log(data);
-                var cnt3 = 0, cnt4 = 0, cnt5 = 0;
-                for (var i = 0; i < rawData.length; i++) {
-                    var type = rawData[i].星级;
-                    if (type == 3) {
-                        cnt3++;
-                    } else if (type == 4) {
-                        cnt4++;
-                    } else cnt5++;
-                }
-                var data = new Array();
-                data[0] = { value: cnt3, name: '3星祈愿' };
-                data[1] = { value: cnt4, name: '4星祈愿' };
-                data[2] = { value: cnt5, name: '5星祈愿' };
-
-                var specificData = getSpecificData(rawData);
-                n = [];
-                cnt = [];
-                for (key in specificData) {
-                    n.push(key);
-                    cnt.push(specificData[key]);
-                }
-
-                makeChart1(data);
-                makeChart2(n, cnt);
-
-            };
-        });
-
-
-
-
 
 
 
