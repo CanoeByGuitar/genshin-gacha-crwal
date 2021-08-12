@@ -32,7 +32,8 @@
             reader.onload = function fileReadCompleted() {
                 var data = getPieData(csvToObject(reader.result));
                 var dataframe = getBarData(csvToObject(reader.result));
-                makeChart(data, dataframe, "container1", "武器池")
+                var pityData = getPityData(csvToObject(reader.result))
+                makeChart(data, dataframe, "container1", "武器池",pityData)
             };
         });
 
@@ -42,7 +43,8 @@
             reader.onload = function fileReadCompleted() {
                 var data = getPieData(csvToObject(reader.result));
                 var dataframe = getBarData(csvToObject(reader.result));
-                makeChart(data, dataframe, "container2", "角色池")
+                var pityData = getPityData(csvToObject(reader.result))
+                makeChart(data, dataframe, "container2", "角色池",pityData)
             };
         });
 
@@ -52,7 +54,8 @@
             reader.onload = function fileReadCompleted() {
                 var data = getPieData(csvToObject(reader.result));
                 var dataframe = getBarData(csvToObject(reader.result));
-                makeChart(data, dataframe, "container3", "常驻池")
+                var pityData = getPityData(csvToObject(reader.result))
+                makeChart(data, dataframe, "container3", "常驻池",pityData)
             };
         });
 
@@ -70,6 +73,22 @@
             }
             return datas;
         }
+
+        function getPityData(rawData){//
+            var num = 0;
+            var data = [];
+            for(var i = 0; i < rawData.length;i++){
+                if(rawData[i].星级 == 5){
+                    num++;
+                    data.push([rawData[i].名称,num]);
+                    num = 0;
+                }else{
+                    num++;
+                }
+            }
+            return [data,num];
+        }
+
 
         function getPieData(rawData) {
             var cnt3 = 0, cnt4 = 0, cnt5 = 0;
@@ -119,16 +138,24 @@
             5: '#ffb700'
         }
 
-        function makeChart(data, dataframe, container, banner) {
+        function makeChart(data, dataframe, container, banner , pityData) {
             var dom = document.getElementById(container);
             var myChart = echarts.init(dom);
             var app = {};
             var option;
-            var yMax = 40;
-            var dataShadow = [];
-            for (var i = 0; i < data.length; i++) {
-                dataShadow.push(yMax);
+            var maxWish;
+            if(banner = '武器池') maxWish = 80;
+            else maxWish = 90;
+
+            var text = '保底数:  '+ pityData[1] +'/'+maxWish+'\n\n';
+            text += '出卡顺序:  ';
+            var t = pityData[0];
+            for(var i = 0;i < t.length;i++){
+                text = text + t[i][0] + '(' + t[i][1] +')';
+                if(i % 2 == 0 && i != 0) text += '\n\n               ';
+                else text += '  ';
             }
+
             option = {
                 toolbox: {
                     show: true,
@@ -171,13 +198,31 @@
                         config: { dimension: 'cnt', order: 'desc' }
                     }
                 }],
+                graphic: {
+                    draggable: true,
+                    type: 'text',
+                    z: 100,
+                    left: '65%',
+                    top: '5%',
+                    shadowBlur: 8,
+                    shadowColor: 'rgba(0,0,0,0.2)',
+                    style: {
+                        fill: '#ffb70',
+                        stroke: '#555',
+                        lineWidth: 1,
+                        // fill: '#ffb700',
+                        // stroke: '#ffb700',
+                        text: text,
+                        font: '16px Microsoft YaHei'
+                    }
+                },
                 series: [
                     {
                         data: data,
-                        center: ['15%', '50%'],
+                        center: ['15%', '55%'],
                         name: '抽卡记录',
                         type: 'pie',
-                        radius: '40%',
+                        radius: '45%',
                         emphasis: {
                             itemStyle: {
                                 shadowBlur: 10,
@@ -188,8 +233,11 @@
                         label: {
                             formatter: '{name|{b}}\n{count|{c}抽({d}%)}',
                             rich: {
+                                name:{
+                                    fontSize: 14
+                                },
                                 count: {
-                                    fontSize: 10,
+                                    fontSize: 11,
                                     color: '#999'
                                 }
                             }
