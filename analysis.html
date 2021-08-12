@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+</head>
+
+<body>
+
+    <div id="container1" style="height: 400px; width: 350px ; display: inline;float: left">
+        <input type="file" id="fileInput">
+    </div>
+    <div id="container2" style="height: 400px; width: 1000px;float: left">
+
+    </div>
+
+
+
+
+    <script>
+        function csvToObject(csvString) {
+            var csvarry = csvString.split("\n");
+            var datas = [];
+            var headers = csvarry[0].split("\t");
+            for (var i = 1; i < csvarry.length - 1; i++) {
+                var data = {};
+                var temp = csvarry[i].split("\t");
+                for (var j = 0; j < temp.length; j++) {
+                    data[headers[j]] = temp[j];
+                }
+                datas.push(data);
+            }
+            return datas;
+        }
+
+        function getSpecificData(rawData) {
+            data = {};
+            for (var i = 0; i < rawData.length; i++) {
+                if (!(rawData[i].名称 in data)) data[rawData[i].名称] = 1;
+                else data[rawData[i].名称]++;
+            }
+            return data;
+        }
+
+        function makeChart1(data) {
+            var dom = document.getElementById("container1");
+            var myChart = echarts.init(dom);
+            var app = {};
+            var option;
+            option = {
+                title: {
+                    text: '祈愿记录',
+                    subtext: '角色池',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                },
+                series: [
+                    {
+                        name: '抽卡记录',
+                        type: 'pie',
+                        radius: '50%',
+
+                        data: data,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        },
+                        label: {
+                            formatter: '{name|{b}}\n{count|{c}抽({d}%)}',
+                            rich: {
+                                count: {
+                                    fontSize: 10,
+                                    color: '#999'
+                                }
+                            }
+                        }
+                    }
+                ]
+            };
+            myChart.setOption(option);
+        }
+
+        function makeChart2(n, cnt) {
+            var dom = document.getElementById("container2");
+            var myChart = echarts.init(dom);
+            var app = {};
+            var option;
+            var yMax = 40;
+            var dataShadow = [];
+            for (var i = 0; i < data.length; i++) {
+                dataShadow.push(yMax);
+            }
+
+            source = []
+            for (var i = 0; i < n.length; i++) {
+                source.push([n[i], cnt[i]])
+            }
+
+            option = {
+                dataset: [{
+                    dimensions: ['name', 'cnt'],
+                    source: source
+                }, {
+                    transform: {
+                        type: 'sort',
+                        config: { dimension: 'cnt', order: 'desc' }
+                    }
+                }],
+                xAxis: {
+                    type: 'category',
+                    axisLabel: { interval: 0, rotate: 45 },
+                },
+                yAxis: {},
+                series: {
+                    type: 'bar',
+                    encode: { x: 'name', y: 'cnt' },
+                    datasetIndex: 1
+                }, tooltip: {
+                    trigger: 'item'
+                },emphasis: {
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowOffsetX: 0,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
+                }
+            };
+
+            if (option && typeof option === 'object') {
+                myChart.setOption(option);
+            }
+        }
+
+
+        document.getElementById('fileInput').addEventListener('change', function selectedFileChanged() {
+            const reader = new FileReader();
+            reader.readAsText(this.files[0]);
+            reader.onload = function fileReadCompleted() {
+                // 当读取完成时，内容只在`reader.result`中
+                // console.log(reader.result);
+                rawData = csvToObject(reader.result);
+                // console.log(data);
+                var cnt3 = 0, cnt4 = 0, cnt5 = 0;
+                for (var i = 0; i < rawData.length; i++) {
+                    var type = rawData[i].星级;
+                    if (type == 3) {
+                        cnt3++;
+                    } else if (type == 4) {
+                        cnt4++;
+                    } else cnt5++;
+                }
+                var data = new Array();
+                data[0] = { value: cnt3, name: '3星祈愿' };
+                data[1] = { value: cnt4, name: '4星祈愿' };
+                data[2] = { value: cnt5, name: '5星祈愿' };
+
+                var specificData = getSpecificData(rawData);
+                n = [];
+                cnt = [];
+                for (key in specificData) {
+                    n.push(key);
+                    cnt.push(specificData[key]);
+                }
+
+                makeChart1(data);
+                makeChart2(n, cnt);
+
+            };
+        });
+
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
